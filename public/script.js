@@ -4,13 +4,15 @@ new Vue({
     total: 0,
     items: [],
     cart: [],
-    searchTerm: ''
+    searchTerm: '',
+    prevSearchTerm: ''
   },
   methods: {
     onSubmit: function() {
       this.$http.
         get('search/'.concat(this.searchTerm)).
           then(function(res) {
+            this.prevSearchTerm = this.searchTerm;
             this.items = res.data;
           });
     },

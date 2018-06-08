@@ -24,6 +24,9 @@
   </div>
   <div class="main">
     <div class="products">
+      <div class="search-results">
+        Found {{ items.length }} results for search term {{ prevSearchTerm }}
+      </div>
       <div class="product" v-for="(item, index) in items">
         <div>
           <div class="product-image">
