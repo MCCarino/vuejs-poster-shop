@@ -4,16 +4,21 @@ new Vue({
     total: 0,
     items: [],
     cart: [],
-    searchTerm: '',
-    prevSearchTerm: ''
+    searchTerm: 'anime',
+    prevSearchTerm: '',
+    loading: false,
+    price: 5
   },
   methods: {
     onSubmit: function() {
+      this.items = [];
+      this.loading = true;
       this.$http.
         get('search/'.concat(this.searchTerm)).
           then(function(res) {
             this.prevSearchTerm = this.searchTerm;
             this.items = res.data;
+            this.loading = false;
           });
     },
     addItem: function(index) {
@@ -28,16 +33,16 @@ new Vue({
         item.qty = 1;
         this.cart.push(item);
       }
-      this.total += item.price;
+      this.total += this.price;
     },
     increment: function(item) {
       item.qty++;
-      this.total += item.price;
+      this.total += this.price;
     },
     decrement: function(item) {
       var cartItemIdx = this.getCartItemIdx(item.id);
       item.qty--;
-      this.total -= item.price;
+      this.total -= this.price;
       if (item.qty == 0) {
         this.cart.splice(cartItemIdx, 1);
       }
@@ -55,5 +60,8 @@ new Vue({
     currency: function(price) {
       return '$'.concat(price.toFixed(2));
     }
+  },
+  mounted: function() {
+    this.onSubmit();
   }
 });
