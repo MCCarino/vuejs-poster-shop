@@ -1,3 +1,5 @@
+var LOAD_INIT_NUM = 10;
+
 new Vue({
   el: '#app',
   data: {
@@ -7,19 +9,32 @@ new Vue({
     searchTerm: 'anime',
     prevSearchTerm: '',
     loading: false,
+    tempResults: [],
     price: 5
   },
   methods: {
+    appendItems: function() {
+      var currItemLen = this.items.length;
+      var allResultsLen = this.tempResults.length;
+      if (currItemLen < allResultsLen) {
+        var partResults = 
+          this.tempResults.slice(currItemLen, currItemLen + LOAD_INIT_NUM);
+        this.items = this.items.concat(partResults);
+      }  
+    },
     onSubmit: function() {
-      this.items = [];
-      this.loading = true;
-      this.$http.
-        get('search/'.concat(this.searchTerm)).
-          then(function(res) {
-            this.prevSearchTerm = this.searchTerm;
-            this.items = res.data;
-            this.loading = false;
-          });
+      if (this.searchTerm.length) {
+        this.items = [];
+        this.loading = true;
+        this.$http.
+          get('search/'.concat(this.searchTerm)).
+            then(function(res) {
+              this.prevSearchTerm = this.searchTerm;
+              this.tempResults = res.data;
+              this.appendItems();
+              this.loading = false;
+            });
+      }
     },
     addItem: function(index) {
       var item = this.items[index];
@@ -56,6 +71,12 @@ new Vue({
       return -1;
     }
   },
+  computed: {
+    hasAllItemsLoaded: function() {
+      return this.items.length == this.tempResults.length && 
+        this.tempResults.length > 0;
+    }
+  },
   filters: {
     currency: function(price) {
       return '$'.concat(price.toFixed(2));
@@ -63,5 +84,12 @@ new Vue({
   },
   mounted: function() {
     this.onSubmit();
+
+    var vueInstance = this;
+    var elem = document.getElementById('product-list-bottom');
+    var watcher = scrollMonitor.create(elem);
+    watcher.enterViewport(function () {
+      vueInstance.appendItems();
+    });
   }
 });
